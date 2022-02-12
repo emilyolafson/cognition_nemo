@@ -78,7 +78,7 @@ nans = readtable('nans.txt');
 nans=table2array(nans);
 nans=nans(~index,:);
 
-% find measures with NaNs in at least 40 subjects, remove them.
+% find measures with NaNs in at least 31 subjects, remove them.
 nans_cols=sum(nans,1);
 nans_cols_thresh=nans_cols>besti;
 nans=nans(:,~nans_cols_thresh);
@@ -88,18 +88,16 @@ nans_rows=sum(nans,2);
 nans_rows_thresh=nans_rows>=1;
 nans=nans(~nans_rows_thresh,:);
 
-size(nans)
-
 % PCA
 df=df(:, ~nans_cols_thresh);
 df=df(~nans_rows_thresh,:);
 
 
-
 colnames=df.Properties.VariableNames
 df=table2array(df);
 
-[coeff,score,latent,tsquared,explained,mu]=pca(df);
+
+[coeff,score,latent,tsquared,explained,mu]=pca(zscore(df));
 figure;
 bar(explained);title('Variance explained by PCA component')
 figure
@@ -112,7 +110,6 @@ biplot(coeff(:,1:2),'scores',score(:,1:2),'varlabels',colnames');
 ids=ids(~nans_rows_thresh,:);
 writecell(ids, '/Users/emilyolafson/GIT/cognition_nemo/final_subIDs.csv')
 
-
 % Load demographic data
 demogs = readtable('demogs_noduplicates_NaNsincluded.csv');
 demogs=demogs(:,3:end)
@@ -120,15 +117,23 @@ demogs=removevars(demogs,{'Dates_of_neuropsychological_testing'})
 
 demogs=demogs(~nans_rows_thresh,:); % remove rows of subjects excluded 
 colnames=demogs.Properties.VariableNames
+
 writecell(colnames, '/Users/emilyolafson/GIT/cognition_nemo/colnames.csv')
 
-
 writetable(demogs, '/Users/emilyolafson/GIT/cognition_nemo/demographic_final.csv')
+
+writematrix(table2array(df), '/Users/emilyolafson/GIT/cognition_nemo/df_minimalfeatures.csv')
 
 writematrix(df.T_MT_A_TIME, '/Users/emilyolafson/GIT/cognition_nemo/T_MT_A_TIME.csv')
 writematrix(df.WAIS_IV_DS_TOTAL_RAW, '/Users/emilyolafson/GIT/cognition_nemo/WAIS_IV_DS_TOTAL_RAW.csv')
 
+% save matrix with cognitive scores for only subset of subjects 
+df = readtable('dataframe_noduplicates_NaNsincluded.csv');
+df=df(:,2:end); % remove index variable
+
+test=df(~nans_rows_thresh,:)
+final_dataframe=table2array(test)
+writematrix(final_dataframe, '/Users/emilyolafson/GIT/cognition_nemo/dataframe_allscores_101subs.csv')
 
 
-
-
+nancols=sum(isnan(final_dataframe),2)./40
