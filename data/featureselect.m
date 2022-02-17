@@ -2,10 +2,11 @@
 %subs with no lesion but cog scores
 
 nolesion={'ca089', 'ca069', 'ca124', 'ca094'};
-nolesionindex=[64, 82, 87, 115];
-index=zeros(149, 1)
+
+nolesionindex=[57, 74, 79];
+index=zeros(91, 1)
 index(nolesionindex)=1
-df = readtable('dataframe_noduplicates_NaNsincluded.csv');
+df = readtable('dataframe_noduplicates_NaNsincluded_chronic.csv');
 df=df(:,2:end); % remove index variable
 colnamesall=df.Properties.VariableNames
 tmt=colnamesall(1:8)
@@ -13,8 +14,8 @@ wasi=colnamesall(9:end)
 
 clear ratio
 for i=1:90
-    df = readtable('dataframe_noduplicates_NaNsincluded.csv');
-    ids = readtable('IDlist_noduplicates_NaNsincluded.csv');
+    df = readtable('dataframe_noduplicates_NaNsincluded_chronic.csv');
+    ids = readtable('IDlist_noduplicates_NaNsincluded_chronic.csv');
     ids=ids(~index,:);
 
     ids=ids(2:end,:); % remove index variable
@@ -61,20 +62,20 @@ legend('Number of subjects', 'Number of variables', 'TMT', 'WASI')
 set(gca, 'FontSize', 14)
 xlabel('Cutoff')
 ylabel('Count')
-legend('TMT', 'WASI')
-
+legend('TMT', 'WAIS')
 
 % implement best tradeoff 
 besti=31
-df = readtable('dataframe_noduplicates_NaNsincluded.csv');
-ids = readtable('IDlist_noduplicates_NaNsincluded.csv');
+df = readtable('dataframe_noduplicates_NaNsincluded_chronic.csv');
+
+ids = readtable('IDlist_noduplicates_NaNsincluded_chronic.csv');
 ids=ids(2:end,:); % remove index variable
 ids=table2array(ids(:,2));
 ids=ids(~index,:);
 df=df(:,2:end); % remove index variable
 df=df(~index,:);
 
-nans = readtable('nans.txt');
+nans = readtable('nans_chronic.txt');
 nans=table2array(nans);
 nans=nans(~index,:);
 
@@ -104,36 +105,75 @@ figure
 biplot(coeff(:,1:2),'scores',score(:,1:2),'varlabels',colnames');
 
 
-
+%% only chronic scores
+df = readtable('dataframe_noduplicates_NaNsincluded.csv');
+df=df(:,3:end)
+nans_rows_thresh=isnan(df.("WAIS_IV_DS_TOTAL_RAW"))
+sum(nans_rows_thresh)
 
 % Output new list of subject IDs
-ids=ids(~nans_rows_thresh,:);
-writecell(ids, '/Users/emilyolafson/GIT/cognition_nemo/final_subIDs.csv')
+ids = readtable('IDlist_noduplicates_NaNsincluded_chronic.csv');
+ids=ids(2:end,:); % remove index variable
+ids=ids(~nans_rows_thresh,"Var3");
+writetable(ids, '/Users/emilyolafson/GIT/cognition_nemo/final_subIDs.csv')
 
-% Load demographic data
-demogs = readtable('demogs_noduplicates_NaNsincluded.csv');
-demogs=demogs(:,3:end)
-demogs=removevars(demogs,{'Dates_of_neuropsychological_testing'})
 
-demogs=demogs(~nans_rows_thresh,:); % remove rows of subjects excluded 
 colnames=demogs.Properties.VariableNames
-
 writecell(colnames, '/Users/emilyolafson/GIT/cognition_nemo/colnames.csv')
 
+demogs=demogs(~nans_rows_thresh,:); % remove rows of subjects excluded 
 writetable(demogs, '/Users/emilyolafson/GIT/cognition_nemo/demographic_final.csv')
 
-writematrix(table2array(df), '/Users/emilyolafson/GIT/cognition_nemo/df_minimalfeatures.csv')
-
-writematrix(df.T_MT_A_TIME, '/Users/emilyolafson/GIT/cognition_nemo/T_MT_A_TIME.csv')
-writematrix(df.WAIS_IV_DS_TOTAL_RAW, '/Users/emilyolafson/GIT/cognition_nemo/WAIS_IV_DS_TOTAL_RAW.csv')
-
 % save matrix with cognitive scores for only subset of subjects 
-df = readtable('dataframe_noduplicates_NaNsincluded.csv');
-df=df(:,2:end); % remove index variable
+df = readtable('dataframe_noduplicates_NaNsincluded_chronic.csv');
+df=df(:,3:end); % remove index variable
 
 test=df(~nans_rows_thresh,:)
+colnames=test.Properties.VariableNames
+
+x=table2array(test)
+zscore = (x - nanmean(x))./nanstd(x);
+
+[coeff,score,latent,tsquared,explained,mu] = pca(zscore,'algorithm','als')
+pc1=score(:,1)
+corr(pc1,table2array(test2))
+
+bar(explained);title('Variance explained by PCA component')
+figure
+biplot(coeff(:,1:2),'scores',score(:,1:2), 'varlabels', colnames)
+
+
+test2=df(~nans_rows_thresh,"WAIS_IV_DS_TOTAL_RAW")
 final_dataframe=table2array(test)
-writematrix(final_dataframe, '/Users/emilyolafson/GIT/cognition_nemo/dataframe_allscores_101subs.csv')
+writematrix(final_dataframe, '/Users/emilyolafson/GIT/cognition_nemo/WAIS_IV_DS_TOTAL_RAW_79.csv')
+
+pc1=zscore(pc1)
+writematrix(pc1, '/Users/emilyolafson/GIT/cognition_nemo/pc1_79.csv')
 
 
-nancols=sum(isnan(final_dataframe),2)./40
+
+%%
+
+
+df_chronic = readtable('dataframe_noduplicates_NaNsincluded_chronic.csv');
+df_acute = readtable('dataframe_noduplicates_NaNsincluded_acute.csv');
+
+df_chronic=df_chronic(:,2:end)
+df_acute=df_acute(:,2:end)
+
+nans_chronic=isnan(df_chronic.("WAIS_IV_DS_TOTAL_RAW"))
+nans_acute=isnan(df_acute.("WAIS_IV_DS_TOTAL_RAW"))
+
+df_chronic=df_chronic(~nans_chronic,:)
+df_acute=df_acute(~nans_acute,:)
+
+ids_chronic=readtable('ids_chronic.csv');
+ids_acute=readtable('ids_acute.csv');
+
+ids_chronic=ids_chronic(~nans_chronic,:)
+ids_acute=ids_acute(~nans_acute,:)
+
+
+
+
+
