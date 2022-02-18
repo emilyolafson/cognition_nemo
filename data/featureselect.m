@@ -153,8 +153,6 @@ writematrix(pc1, '/Users/emilyolafson/GIT/cognition_nemo/pc1_79.csv')
 
 
 %%
-
-
 df_chronic_wais=readtable('df_chronic_wais.csv')
 df_acute_wais=readtable('df_acute_wais.csv')
 
