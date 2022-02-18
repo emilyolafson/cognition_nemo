@@ -155,25 +155,25 @@ writematrix(pc1, '/Users/emilyolafson/GIT/cognition_nemo/pc1_79.csv')
 %%
 
 
-df_chronic = readtable('dataframe_noduplicates_NaNsincluded_chronic.csv');
-df_acute = readtable('dataframe_noduplicates_NaNsincluded_acute.csv');
-
-df_chronic=df_chronic(:,2:end)
-df_acute=df_acute(:,2:end)
-
-nans_chronic=isnan(df_chronic.("WAIS_IV_DS_TOTAL_RAW"))
-nans_acute=isnan(df_acute.("WAIS_IV_DS_TOTAL_RAW"))
-
-df_chronic=df_chronic(~nans_chronic,:)
-df_acute=df_acute(~nans_acute,:)
-
-ids_chronic=readtable('ids_chronic.csv');
-ids_acute=readtable('ids_acute.csv');
-
-ids_chronic=ids_chronic(~nans_chronic,:)
-ids_acute=ids_acute(~nans_acute,:)
+df_chronic_wais=readtable('df_chronic_wais.csv')
+df_acute_wais=readtable('df_acute_wais.csv')
 
 
+ids_chronic=readtable('ids_chronic.csv')
+ids_acute=readtable('ids_acute.csv')
 
+ids_chronic=ids_chronic(2:end,:);
+ids_acute=ids_acute(2:end,:);
 
+ids_all= [ids_chronic; ids_acute]
+
+ids_all=sortrows(ids_all)
+ids_all_a=table2array(ids_all(:,2))
+
+ids_chronic_a=table2array(ids_chronic(:,2))
+ids_acute_a=table2array(ids_acute(:,2))
+
+writecell(ids_chronic_a, '/Users/emilyolafson/GIT/cognition_nemo/ids_chronic_a.csv')
+
+writecell(ids_acute_a, '/Users/emilyolafson/GIT/cognition_nemo/ids_acute_a.csv')
 
