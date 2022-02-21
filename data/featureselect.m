@@ -156,7 +156,6 @@ writematrix(pc1, '/Users/emilyolafson/GIT/cognition_nemo/pc1_79.csv')
 df_chronic_wais=readtable('df_chronic_wais.csv')
 df_acute_wais=readtable('df_acute_wais.csv')
 
-
 ids_chronic=readtable('ids_chronic.csv')
 ids_acute=readtable('ids_acute.csv')
 
@@ -174,4 +173,17 @@ ids_acute_a=table2array(ids_acute(:,2))
 writecell(ids_chronic_a, '/Users/emilyolafson/GIT/cognition_nemo/ids_chronic_a.csv')
 
 writecell(ids_acute_a, '/Users/emilyolafson/GIT/cognition_nemo/ids_acute_a.csv')
+
+writecell(table2array(ids_all(:,2)), '/Users/emilyolafson/GIT/cognition_nemo/ids_all.csv')
+
+
+
+%% check to see if distribution of the two batches of chaco are different?
+
+before=load('/Users/emilyolafson/GIT/cognition_nemo/SC/txtfiles/ca065_nemo_output_chacoconn_fs86subj_nemoSC_volnorm.txt')
+after=load('/Users/emilyolafson/GIT/cognition_nemo/SC/txtfiles_rem/ca144_nemo_output_chacoconn_fs86subj_nemoSC_volnorm.txt')
+
+corr(reshape(before, 1, [])', reshape(after, 1, [])')
+plot(reshape(before, 1, [])', reshape(after, 1, [])')
+
 
