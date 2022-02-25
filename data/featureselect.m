@@ -3,33 +3,23 @@
 
 nolesion={'ca089', 'ca069', 'ca124', 'ca094'};
 
-nolesionindex=[57, 74, 79];
-index=zeros(91, 1)
+nolesionindex=[117];
+index=zeros(149, 1)
 index(nolesionindex)=1
-df = readtable('dataframe_noduplicates_NaNsincluded_chronic.csv');
+df = readtable('df_all.csv');
 df=df(:,2:end); % remove index variable
 colnamesall=df.Properties.VariableNames
-tmt=colnamesall(1:8)
-wasi=colnamesall(9:end)
+wasi=colnamesall(30:72)
 
 clear ratio
 for i=1:90
-    df = readtable('dataframe_noduplicates_NaNsincluded_chronic.csv');
-    ids = readtable('IDlist_noduplicates_NaNsincluded_chronic.csv');
-    ids=ids(~index,:);
+    df=readtable("~/GIT/cognition_nemo/df_all.csv");
+    ids = readtable('ids_all.csv');
 
     ids=ids(2:end,:); % remove index variable
     ids=table2array(ids(:,2));
     df=df(:,2:end); % remove index variable
-    df=df(~index,:);
-    nans = readtable('nans.txt');
-    nans=table2array(nans);
-    nans=nans(~index,:);
-
-    % find measures with NaNs in at least 40 subjects, remove them.
-    nans_cols=sum(nans,1);
     nans_cols_thresh=nans_cols>i;
-    
     nans=nans(:,~nans_cols_thresh);
 
     % find subjects with missing data in the remaining measures.
@@ -186,4 +176,28 @@ after=load('/Users/emilyolafson/GIT/cognition_nemo/SC/txtfiles_rem/ca144_nemo_ou
 corr(reshape(before, 1, [])', reshape(after, 1, [])')
 plot(reshape(before, 1, [])', reshape(after, 1, [])')
 
+
+
+
+%%
+IDs=df.RedID
+colnames=df.Properties.VariableNames
+colnames=colnames(5:end)
+df1=table2array(df(:,5:end))
+
+
+isnan(df1)
+
+zscore=normalize(df1)
+[coeff,score,latent,tsquared,explained,mu] = pca(zscore,'algorithm','als')
+
+bar(explained);title('Variance explained by PCA component')
+set(gca, 'FontSize', 14)
+
+figure
+biplot(coeff(:,1:2),'scores',score(:,1:2), 'varlabels', colnames)
+
+
+set(gca, 'FontSize', 14)
+after=load('/Users/emilyolafson/GIT/cognition_nemo/SC/txtfiles_rem/ca144_nemo_output_chacoconn_fs86subj_nemoSC_volnorm.txt')
 
