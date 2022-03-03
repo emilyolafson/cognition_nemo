@@ -180,6 +180,12 @@ plot(reshape(before, 1, [])', reshape(after, 1, [])')
 
 
 %%
+
+df=readtable("~/GIT/cognition_nemo/data/spreadsheets/df_all.csv");
+ids = readtable('ids_all.csv');
+
+
+
 IDs=df.RedID
 colnames=df.Properties.VariableNames
 colnames=colnames(5:end)
