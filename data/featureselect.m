@@ -181,10 +181,8 @@ plot(reshape(before, 1, [])', reshape(after, 1, [])')
 
 %%
 
-df=readtable("~/GIT/cognition_nemo/data/spreadsheets/df_all.csv");
+df=readtable("~/GIT/cognition_nemo/df_all.csv");
 ids = readtable('ids_all.csv');
-
-
 
 IDs=df.RedID
 colnames=df.Properties.VariableNames
@@ -207,3 +205,90 @@ biplot(coeff(:,1:2),'scores',score(:,1:2), 'varlabels', colnames)
 set(gca, 'FontSize', 14)
 after=load('/Users/emilyolafson/GIT/cognition_nemo/SC/txtfiles_rem/ca144_nemo_output_chacoconn_fs86subj_nemoSC_volnorm.txt')
 
+
+%% Plot cognitive scores (TMT and WAIS), PCA with missing data.
+df=readtable("~/GIT/cognition_nemo/df_all.csv");
+ids=readtable("~/GIT/cognition_nemo/ids_all.csv");
+
+testname=df(:,31:81).Properties.VariableNames
+subid=df.RedID
+
+tmtwais=df(:,31:81);
+tmtwais=table2array(tmtwais)
+
+% sort columns by number of nans
+[c,idx]=sort(sum(isnan(tmtwais)))
+out=tmtwais(:,idx)
+names=testname(:,idx)
+
+colormap(flipud(hot))
+out2=(out - nanmean(out))./nanstd(out)
+imagesc(out2)
+xticks(1:1:51)
+xticklabels(names)
+xtickangle(90)
+set(gca,'TickLabelInterpreter','none')
+ylabel('Subject', 'FontSize', 15)
+xlabel('Cognitive test', 'FontSize', 15)
+ax = gca;
+ax.FontSize = 16; 
+
+% find at which test there's > 30% missing data
+sum(~isnan(out2),1)/size(out2,1)
+
+% select data up to that test
+out2_reduced=out2(:,1:11)
+names_reduced=names(:,1:11)
+
+zscore=normalize(out2_reduced)
+
+one=zscore(:,1)
+two=zscore(:,7)
+
+corr(one,two, 'rows','complete')
+
+
+imagesc(corr(zscore,'rows','complete'))
+xticks(1:1:11)
+xticklabels(names_reduced)
+xtickangle(90)
+yticks(1:1:11)
+
+yticklabels(names_reduced)
+set(gca,'TickLabelInterpreter','none')
+colormap(flipud(brewermap([], 'RdBu')))
+
+sum(corr(out2_reduced,'rows','complete'))
+
+
+[coeff,score,latent,tsquared,explained,mu] = pca(zscore,'algorithm','als')
+
+bar(explained);ylabel('% variance explained')
+set(gca, 'FontSize', 14)
+
+figure
+biplot(coeff(:,1:2),'scores',score(:,1:2), 'varlabels', names_reduced)
+
+set(gca,'FontSize', 15)
+
+bar(coeff(:,1));xticks(1:1:11)
+xticklabels(names_reduced)
+
+set(gca,'TickLabelInterpreter','none')
+ylabel('PC score', 'fontsize', 15)
+
+xtickangle(90)
+ax = gca;
+ax.FontSize = 16; 
+
+
+
+
+% remove subjects missing WAIS IV DS TOTAL RAW
+waisnan=isnan(out2(:,1))
+out2=out2(~waisnan,:)
+subid_nan=subid(~waisnan,:)
+for i = 1:123
+    writematrix(score(i,1),strcat('~/GIT/cognition_nemo/data/spreadsheets/pc_scores/', cell2mat(table2array(ids_all(i+1,1))), '_pc1.txt'))
+end
+    
